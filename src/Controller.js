@@ -14,8 +14,6 @@ function init(numFloors, numElevators, maxTrips, floorTravelTime, doorTime) {
     for(var i=0; i < this.numElevators; i++) {
         this.elevators.push(new Elevator("" + i, this.maxTrips));
     }
-
-    console.log(this.elevators);
 }
 
 // Command to send an elevator to the given floor to travel either up or down
