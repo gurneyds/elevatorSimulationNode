@@ -1,4 +1,6 @@
-let ElevatorStateEnum = {
+'use strict';
+
+var ElevatorStateEnum = {
     STOPPED: 1,
     DOORS_OPENING: 2,
     DOORS_CLOSING: 3,
