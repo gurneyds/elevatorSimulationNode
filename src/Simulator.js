@@ -15,6 +15,7 @@ var schema = {
 		}
 	}
 };
+
 var floorRequestSchema = {
 	properties: {
 		pickupFloor: {
@@ -88,7 +89,13 @@ function elevatorRequest() {
 		if(err) { console.log("An error occurred - sorry")}
 
 		// Send the information to the controller
-		controller.sendElevator(result.pickupFloor, result.destinationFloor);
+		var controllerPromise = controller.sendElevator(result.pickupFloor, result.destinationFloor);
+
+		controllerPromise.then(function(data){
+			console.log("controller promise success response:" + data);
+		}, function(data){
+			console.log("controller promise reject response:" + data);
+		});
 
 		// Ask the user for the next command
 		getUserInput();
