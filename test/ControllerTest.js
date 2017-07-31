@@ -3,7 +3,7 @@ var controller = require('../src/Controller');
 
 describe("Controller tests", function(){
 	before(function(done){
-		controller.init(1, 4, 10, 1, 1, 1); // Use a very small wait time to speed up the tests
+		controller.init(4, 4, 10, 1, 1, 1); // Use a very small wait time to speed up the tests
 		controller.sendElevator(2, 3).then(function(data){
 			done();
 		}, function(data){
@@ -38,7 +38,7 @@ describe("Controller tests", function(){
 		expect(function() {controller.sendElevator(5).to.throw("Invalid pickup floor, must be between 1 - number of floors")})
 
 		expect(function() {controller.sendElevator(1).to.throw("Invalid destination floor, must be between 1 - number of floors")})
-		expect(function() {controller.sendElevator(0).to.throw("Invalid destination floor, must be between 1 - number of floors")})
-		expect(function() {controller.sendElevator(5).to.throw("Invalid destination floor, must be between 1 - number of floors")})
+		expect(function() {controller.sendElevator(0,0).to.throw("Invalid destination floor, must be between 1 - number of floors")})
+		expect(function() {controller.sendElevator(4,5).to.throw("Invalid destination floor, must be between 1 - number of floors")})
 	});
 })

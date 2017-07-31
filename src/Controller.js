@@ -37,7 +37,7 @@ function validateConfig(numFloors, numElevators, maxTrips, floorTravelTime, door
 
 // Command to send an elevator to the given floor to travel either up or down
 function sendElevator(pickupFloor, destinationFloor) {
-	validateSendRequest(pickupFloor, destinationFloor);
+	validateSendRequest(pickupFloor, destinationFloor, this.numFloors);
 
 	console.log("Sending elevator to floor:" + pickupFloor + " with a destination of:" + destinationFloor);
 
@@ -58,9 +58,9 @@ function sendElevator(pickupFloor, destinationFloor) {
 	});
 }
 
-function validateSendRequest(pickupFloor, destinationFloor) {
-	if(!pickupFloor || pickupFloor < 1 || pickupFloor > this.numFloors) { throw new Error("Invalid pickup floor, must be between 1 - number of floors")}
-	if(!destinationFloor || destinationFloor < 1 || destinationFloor > this.numFloors) { throw new Error("Invalid destination floor, must be between 1 - number of floors")}
+function validateSendRequest(pickupFloor, destinationFloor, numFloors) {
+	if(!pickupFloor || pickupFloor < 1 || pickupFloor > numFloors) { throw new Error("Invalid pickup floor, must be between 1 - number of floors:" + numFloors)}
+	if(!destinationFloor || destinationFloor < 1 || destinationFloor > numFloors) { throw new Error("Invalid destination floor, must be between 1 - number of floors")}
 }
 
 // Shows the state of each elevator
