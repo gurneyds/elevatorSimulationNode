@@ -92,12 +92,12 @@ function elevatorRequest() {
 		var controllerPromise = controller.sendElevator(result.pickupFloor, result.destinationFloor);
 
 		controllerPromise.then(function(data){
-			console.log("controller promise success response:" + data);
+			console.log(data);
 		}, function(data){
-			console.log("controller promise reject response:" + data);
+			console.log(data);
 		});
 
-		// Ask the user for the next command
+		// Ask the user for the next command - even while the elevators are moving
 		getUserInput();
 	});
 }

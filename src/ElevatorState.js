@@ -6,7 +6,8 @@ var ElevatorStateEnum = {
 	DOORS_CLOSING: 3,
 	MOVING_UP: 4,
 	MOVING_DOWN: 5,
-	OUT_OF_SERVICE: 6
+	WAITING_FOR_PASSENGERS: 6,
+	OUT_OF_SERVICE: 7
 };
 
 module.exports = ElevatorStateEnum;

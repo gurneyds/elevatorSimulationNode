@@ -1,8 +1,6 @@
 var Elevator = require('../src/Elevator').Elevator;
 var expect  = require('chai').expect;
 
-var elevator = new Elevator("South Elevator", this.maxTrips, this.floorTravelTime, this.doorTime)
-
 describe("Elevator tests", function() {
 	describe("Move to floor", function() {
 		var elevator = new Elevator("South Elevator", this.maxTrips, this.floorTravelTime, this.doorTime);
