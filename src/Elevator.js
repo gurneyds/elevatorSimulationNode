@@ -1,6 +1,6 @@
 'use strict';
 
-var ElevatorState = require("./ElevatorState");
+var MovementEnum = require("./MovementEnum");
 var events = require('events');
 var eventEmitter = new events.EventEmitter();
 
@@ -15,7 +15,8 @@ function Elevator(name, maxTrips, floorTravelTime, doorTime, passengerTime) {
 	// Dynamic state information
 	this.tripCount = 0;
 	this.currentFloor = 1;
-	this.state = ElevatorState.STOPPED;
+	this.destinationFloor = 1;
+	this.movementState = MovementEnum.STOPPED;
 	this.tripCount = 0;
 }
 
@@ -24,8 +25,30 @@ Elevator.prototype.service = function() {
 	this.tripCount = 0;
 }
 
+Elevator.prototype.estimateTime = function(pickupFloor, destinationFloor) {
+	// If the elevator is stopped, get the time to move to the pickup floor
+	if(this.movementState === MovementEnum.STOPPED) {
+		return this._estimateTimeToFloor(this.currentFloor, pickupFloor);
+	} else {
+		// Calculate the time to finish the current trip
+		var finishTrip = this._estimateTimeToFloor(this.currentFloor, this.destinationFloor);
+		var toPickupFloor = this._estimateTimeToFloor(this.destinationFloor, pickupFloor);
+		return finishTrip + toPickupFloor;
+	}
+}
+
+// Helper method
+Elevator.prototype._estimateTimeToFloor = function(pickupFloor, destinationFloor) {
+	var deltaFloors = Math.abs(pickupFloor - destinationFloor);
+	var floorTransitionTime = deltaFloors * this.floorTravelTime;
+	var doorTime = (deltaFloors * this.doorTime) * 2;  // Open and close the door
+	var passengerWaitTime = deltaFloors * this.passengerTime;
+	return floorTransitionTime + doorTime + passengerWaitTime;
+}
+
 Elevator.prototype.doWork = function(pickupFloor, destinationFloor) {
 	var that = this;
+	this.destinationFloor = destinationFloor;
 
 	// Close the door, open the door
 	return this._openDoor(false)
@@ -36,7 +59,7 @@ Elevator.prototype.doWork = function(pickupFloor, destinationFloor) {
 		.then(function() {return that._moveToFloor(destinationFloor)})
 		.then(function() {
 			that.tripCount++;
-			that.state = ElevatorState.STOPPED;
+			that.state = MovementEnum.STOPPED;
 
 			console.log("waiting for the next request");
 
@@ -48,8 +71,6 @@ Elevator.prototype.doWork = function(pickupFloor, destinationFloor) {
 Elevator.prototype._openDoor = function(shouldOpen) {
 	var that = this;
 	return new Promise(function(resolve, reject){
-		that.state = shouldOpen ? ElevatorState.DOORS_OPENING : ElevatorState.DOORS_CLOSING;
-
 		var message = shouldOpen ? "open" : "close";
 
 		// TODO - maybe emit an event here? Then a listener could choose to display what is happening?
@@ -66,14 +87,14 @@ Elevator.prototype._openDoor = function(shouldOpen) {
 Elevator.prototype._moveToFloor = function(floorNum) {
 	var moveTime = 0;
 	var deltaFloors = this.currentFloor - floorNum; // Determine how many floors we need to travel
-	this.state = deltaFloors > 0 ? ElevatorState.MOVING_UP : ElevatorState.MOVING_DOWN;
+	this.movementState = deltaFloors > 0 ? MovementEnum.MOVING_UP : MovementEnum.MOVING_DOWN;
 	moveTime = Math.abs(deltaFloors * this.floorTravelTime);
 
 	var that = this;
 	return new Promise(function(resolve, reject){
 		console.log("Starting to move to floor " + floorNum);
 		setTimeout(function(floorNum) {
-			that.state = ElevatorState.STOPPED;
+			that.state = MovementEnum.STOPPED;
 			that.currentFloor = floorNum;
 			resolve(floorNum);
 			console.log("Arrived at floor " + floorNum);
@@ -84,11 +105,10 @@ Elevator.prototype._moveToFloor = function(floorNum) {
 
 Elevator.prototype._waitForPassengers = function() {
 	var that = this;
-	this.state = ElevatorState.WAITING_FOR_PASSENGERS;
 	return new Promise(function(resolve, reject){
 		console.log("Waiting for passengers to load/unload");
 		setTimeout(function(floorNum) {
-			that.state = ElevatorState.STOPPED;
+			that.state = MovementEnum.STOPPED;
 			resolve();
 			console.log("Done waiting for passengers");
 			// TODO - maybe emit an event here? Then a listener could choose to display what is happening?

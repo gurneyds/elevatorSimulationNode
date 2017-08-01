@@ -22,7 +22,7 @@ function init(numFloors, numElevators, maxTrips, floorTravelTime, doorTime, pass
 
 	// Create the elevators
 	for(var i=0; i < this.numElevators; i++) {
-		this.elevators.push(new Elevator("" + i, this.maxTrips, this.floorTravelTime, this.doorTime));
+		this.elevators.push(new Elevator("" + i, this.maxTrips, this.floorTravelTime, this.doorTime, this.passengerTime));
 	}
 }
 
@@ -41,7 +41,8 @@ function sendElevator(pickupFloor, destinationFloor) {
 
 	console.log("Sending elevator to floor:" + pickupFloor + " with a destination of:" + destinationFloor);
 
-	// TODO - Find the best elevator to handle the request
+	// Find the best elevator to handle the request
+	var elevator = this.findBestElevator(pickupFloor, destinationFloor);
 
 	// Command the elevator the fulfil the request
 	var elevatorPromise = this.elevators[0].doWork(pickupFloor, destinationFloor);
@@ -56,6 +57,23 @@ function sendElevator(pickupFloor, destinationFloor) {
 			}
 		);
 	});
+}
+
+// Find an elevator that is best suited to service the request
+function findBestElevator(pickupFloor, destinationFloor) {
+	var selectedElevator = this.elevators[0];
+	var estimatedTime = Number.MAX_VALUE;
+
+	// Ask each elevator to calculate the time needed for to arrive at the pickup floor.
+	for(var i=0; i < this.elevators.length; i++) {
+		var time = this.elevators[i].estimateTime(pickupFloor, destinationFloor);
+		if(time < estimatedTime) {
+			selectedElevator = this.elevators[i];
+			estimatedTime = time;
+		}
+	}
+
+	return selectedElevator;
 }
 
 function validateSendRequest(pickupFloor, destinationFloor, numFloors) {
@@ -81,5 +99,6 @@ module.exports = {
 	init: init,
 	sendElevator: sendElevator,
 	showElevators: showElevators,
-	getElevators: getElevators
+	getElevators: getElevators,
+	findBestElevator: findBestElevator
 }

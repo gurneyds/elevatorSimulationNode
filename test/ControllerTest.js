@@ -1,8 +1,10 @@
 var expect  = require('chai').expect;
 var controller = require('../src/Controller');
+var MovementEnum = require('../src/MovementEnum');
 
 describe("Controller tests", function(){
 	before(function(done){
+		this.timeout(0);
 		controller.init(4, 4, 10, 1, 1, 1); // Use a very small wait time to speed up the tests
 		controller.sendElevator(2, 3).then(function(data){
 			done();
@@ -41,4 +43,21 @@ describe("Controller tests", function(){
 		expect(function() {controller.sendElevator(0,0).to.throw("Invalid destination floor, must be between 1 - number of floors")})
 		expect(function() {controller.sendElevator(4,5).to.throw("Invalid destination floor, must be between 1 - number of floors")})
 	});
+
+	describe.only("choose the best elevator", function(){
+		it("picks the elevator that is stopped", function() {
+			controller.init(4, 2, 10, 100, 100, 100);
+
+			// Simulate the first elevator going to the 4th floor
+			controller.getElevators()[0].movementState = MovementEnum.MOVING_UP;
+			controller.getElevators()[0].destinationFloor = 4;
+
+			// Second elevator is stopped on the third floor
+			controller.getElevators()[1].movementState = MovementEnum.STOPPED;
+			controller.getElevators()[1].currentFloor = 3;
+
+			// Second elevator should be selected
+			expect(controller.findBestElevator(3, 4).name === '1').to.be.true;
+		});
+	})
 })
