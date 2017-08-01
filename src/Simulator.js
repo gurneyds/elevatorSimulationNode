@@ -47,8 +47,7 @@ function runSimulator() {
 function displayUserOptions() {
 	console.log("\n1. Request an elevator");
 	console.log("2. Show elevator status");
-	console.log("3. Show request queue");
-	console.log("4. Quit\n");
+	console.log("3. Quit\n");
 }
 
 function getUserInput() {
@@ -73,14 +72,11 @@ function dispatchCommand(command) {
 			getUserInput();
 			break;
 		case '3':
-			showRequestQueue();
-			getUserInput();
-			break;
-		case '4':
 			prompt.stop();
 			break;
 		default:
 			console.log('Unknown command');
+			getUserInput();
 	}
 }
 
@@ -103,11 +99,11 @@ function elevatorRequest() {
 }
 
 function showElevators() {
-	console.log("\nshow elevator status here:");
-}
-
-function showRequestQueue(){
-	console.log("\nShow the request queue here:");
+	controller.getElevators().forEach(function(elevator){
+		console.log("-----------------------------------");
+		elevator.showStatus();
+		console.log("-----------------------------------");
+	});
 }
 
 // Run the simulator

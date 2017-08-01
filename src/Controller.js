@@ -3,9 +3,6 @@ var Elevator = require('./Elevator').Elevator;
 var events = require('events');
 var eventEmitter = new events.EventEmitter();
 
-// Setup the elevator listener
-eventEmitter.on('elevator', elevatorListener);
-
 // Controller for all of the elevators
 function init(numFloors, numElevators, maxTrips, floorTravelTime, doorTime, passengerTime) {
 	this.numFloors = numFloors || 4;
@@ -90,15 +87,10 @@ function getElevators() {
 	return this.elevators;
 }
 
-
-function elevatorListener() {
-	console.log("elevatorListener called");
-}
-
 module.exports = {
 	init: init,
 	sendElevator: sendElevator,
 	showElevators: showElevators,
 	getElevators: getElevators,
 	findBestElevator: findBestElevator
-}
+};

@@ -2,7 +2,6 @@
 
 var MovementEnum = require("./MovementEnum");
 var events = require('events');
-var eventEmitter = new events.EventEmitter();
 
 function Elevator(name, maxTrips, floorTravelTime, doorTime, passengerTime) {
 	// Configuration information
@@ -17,15 +16,14 @@ function Elevator(name, maxTrips, floorTravelTime, doorTime, passengerTime) {
 	this.currentFloor = 1;
 	this.destinationFloor = 1;
 	this.movementState = MovementEnum.STOPPED;
-	this.tripCount = 0;
 }
 
 // Service the elevator
 Elevator.prototype.service = function() {
 	this.tripCount = 0;
-}
+};
 
-Elevator.prototype.estimateTime = function(pickupFloor, destinationFloor) {
+Elevator.prototype.estimateTime = function(pickupFloor) {
 	// If the elevator is stopped, get the time to move to the pickup floor
 	if(this.movementState === MovementEnum.STOPPED) {
 		return this._estimateTimeToFloor(this.currentFloor, pickupFloor);
@@ -35,7 +33,7 @@ Elevator.prototype.estimateTime = function(pickupFloor, destinationFloor) {
 		var toPickupFloor = this._estimateTimeToFloor(this.destinationFloor, pickupFloor);
 		return finishTrip + toPickupFloor;
 	}
-}
+};
 
 // Helper method
 Elevator.prototype._estimateTimeToFloor = function(pickupFloor, destinationFloor) {
@@ -44,7 +42,7 @@ Elevator.prototype._estimateTimeToFloor = function(pickupFloor, destinationFloor
 	var doorTime = (deltaFloors * this.doorTime) * 2;  // Open and close the door
 	var passengerWaitTime = deltaFloors * this.passengerTime;
 	return floorTransitionTime + doorTime + passengerWaitTime;
-}
+};
 
 Elevator.prototype.doWork = function(pickupFloor, destinationFloor) {
 	var that = this;
@@ -59,30 +57,28 @@ Elevator.prototype.doWork = function(pickupFloor, destinationFloor) {
 		.then(function() {return that._moveToFloor(destinationFloor)})
 		.then(function() {
 			that.tripCount++;
-			that.state = MovementEnum.STOPPED;
+			that.movementState = MovementEnum.STOPPED;
 
 			console.log("waiting for the next request");
 
-			// Notify listeners that the elevator is ready for another request
-			//eventEmitter.emit('elevator');
+			return new Promise(function(resolve){
+				resolve("done servicing the elevator request");
+			})
 		});
-}
+};
 
 Elevator.prototype._openDoor = function(shouldOpen) {
 	var that = this;
-	return new Promise(function(resolve, reject){
+	return new Promise(function(resolve){
 		var message = shouldOpen ? "open" : "close";
-
-		// TODO - maybe emit an event here? Then a listener could choose to display what is happening?
 
 		console.log("Starting to " + message + " door");
 		setTimeout(function(message) {
 			resolve(message);
 			console.log("Door is now " + message);
-			// TODO - maybe emit an event here? Then a listener could choose to display what is happening?
 		}.bind(null, message), that.doorTime);
 	});
-}
+};
 
 Elevator.prototype._moveToFloor = function(floorNum) {
 	var moveTime = 0;
@@ -91,31 +87,41 @@ Elevator.prototype._moveToFloor = function(floorNum) {
 	moveTime = Math.abs(deltaFloors * this.floorTravelTime);
 
 	var that = this;
-	return new Promise(function(resolve, reject){
+	return new Promise(function(resolve){
 		console.log("Starting to move to floor " + floorNum);
 		setTimeout(function(floorNum) {
 			that.state = MovementEnum.STOPPED;
 			that.currentFloor = floorNum;
+
+			// Resolve the promise
 			resolve(floorNum);
 			console.log("Arrived at floor " + floorNum);
-			// TODO - maybe emit an event here? Then a listener could choose to display what is happening?
 		}.bind(null, floorNum), moveTime);
 	});
-}
+};
 
 Elevator.prototype._waitForPassengers = function() {
 	var that = this;
-	return new Promise(function(resolve, reject){
+	return new Promise(function(resolve){
 		console.log("Waiting for passengers to load/unload");
-		setTimeout(function(floorNum) {
+		setTimeout(function() {
 			that.state = MovementEnum.STOPPED;
+
+			// Resolve the promise
 			resolve();
 			console.log("Done waiting for passengers");
-			// TODO - maybe emit an event here? Then a listener could choose to display what is happening?
 		}, that.passengerTime);
 	});
-}
+};
+
+Elevator.prototype.showStatus = function() {
+	console.log("Name:" + this.name);
+	console.log("Current floor:" + this.currentFloor);
+	console.log("Destination floor:" + this.destinationFloor);
+	console.log("Movement status:" + MovementEnum.describe(this.movementState));
+	console.log("Trip count:" + this.tripCount);
+};
 
 module.exports = {
 	Elevator:Elevator
-}
+};
